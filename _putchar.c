@@ -16,10 +16,8 @@ int _putchar(int c)
 	if (c == -1 || pos >= 1024)
 	{
 		write(1, buf, pos);
-
 		pos = 0;
 	}
-
 	if (c != -1)
 	{
 		buf[pos++] = c;
