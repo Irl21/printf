@@ -1,46 +1,57 @@
 #include "main.h"
+
 /**
-* _printf - main function to print in console
-* @format: array to print and check type
-* Return: count of character printed
-**/
+ *_printf - Print a formatted string
+ *@format: format string
+ *Return: number of characters printed
+ */
+
 int _printf(const char *format, ...)
 {
-	int count = -1;
+	int count = 0;
 
-	if (format != NULL)
+	va_list list;
+
+	char *pointer, *start;
+
+	param_func flags = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	va_start(list, format);
+
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+
+	for (pointer = (char *)format; *pointer; pointer++)
 	{
-		int i;
+		init_params(&flags, list);
 
-		va_list ar_list;
-
-		int (*o)(va_list);
-
-		va_start(ar_list, format);
-
-		if (format[0] == '%' && format[1] == '\0')
-			return (-1);
-		count = 0;
-		for (i = 0; format[i] != '\0'; i++)
+		if (*pointer != '%')
 		{
-			if (format[i] == '%')
-			{
-				if (format[i + 1] == '%')
-				{
-					count += _putchar(format[i]);
-					i++;
-				}
-				else if (format[i + 1] != '\0')
-				{
-					o = get_func(format[i + 1]);
-					count += (o ? o(ar_list) : _putchar(format[i]) + _putchar(format[i + 1]));
-					i++;
-				}
-			}
-			else
-				count += _putchar(format[i]);
+			count += _putchar(*pointer);
+
+			continue;
 		}
-		va_end(ar_list);
+		start = pointer;
+		pointer++;
+
+		while (get_flags(pointer, &flags))
+		{
+			pointer++;
+
+		}
+		pointer = get_width(pointer, &flags, list);
+		pointer = get_precision(pointer, &flags, list);
+		if (get_mods(pointer, &flags))
+			pointer++;
+		if (!func_parse(pointer))
+			count += print_range(start, pointer,
+			flags.l_mod || flags.h_mod ? pointer - 1 : 0);
+		else
+			count += print_func(pointer, list, &flags);
 	}
+	_putchar(-1);
+	va_end(list);
 	return (count);
 }
